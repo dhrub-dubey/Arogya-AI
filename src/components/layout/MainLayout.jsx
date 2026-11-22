@@ -19,7 +19,7 @@ export default function MainLayout() {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen-safe min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       <AppHeader onMenuToggle={() => setSidebarOpen(true)} user={user} />
       <AppSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className={`max-w-5xl mx-auto ${showBottomNav ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0' : ''}`}>

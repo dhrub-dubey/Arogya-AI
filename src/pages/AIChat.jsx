@@ -178,7 +178,7 @@ export default function AIChat() {
   const suggestedQuestions = [t('suggestedQ1'), t('suggestedQ2'), t('suggestedQ3')];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] sm:h-[calc(100dvh-4rem-env(safe-area-inset-top))]">
+    <div className="fixed inset-x-0 bottom-0 top-[calc(3.5rem+env(safe-area-inset-top))] sm:top-[calc(4rem+env(safe-area-inset-top))] z-30 flex flex-col max-w-5xl mx-auto bg-background">
       <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-1">
         {messages.length === 0 && !pendingUserMessage && (
           <div className="flex flex-col items-center justify-center h-full text-center px-8">

@@ -28,10 +28,10 @@ export default function ServiceGrid() {
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-3 gap-3">
       {services.map(({ labelKey, icon: Icon, path, gradient }) => (
-        <motion.div key={labelKey} variants={item}>
+        <motion.div key={labelKey} variants={item} className="h-full">
           <Link
             to={path}
-            className="flex flex-col items-center gap-2.5 p-4 rounded-2xl glass-card hover:shadow-lg transition-all group"
+            className="flex flex-col items-center h-full gap-2.5 p-3 sm:p-4 rounded-2xl glass-card hover:shadow-lg transition-all group"
           >
             <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
               <Icon className="h-6 w-6 text-white" />
