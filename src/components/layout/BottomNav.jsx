@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, MessageCircle, Stethoscope, MapPin, Menu } from 'lucide-react';
+import { LayoutDashboard, MessageCircle, Stethoscope, MapPin, Settings } from 'lucide-react';
 import { useLang } from '@/lib/LanguageContext';
 
-/** Phone-style tab bar, shown on small screens only. "More" opens the full menu. */
-export default function BottomNav({ onMore }) {
+/** Phone-style tab bar, shown on small screens only. Everything else is in the ☰ menu. */
+export default function BottomNav() {
   const { pathname } = useLocation();
   const { t } = useLang();
 
@@ -13,6 +13,7 @@ export default function BottomNav({ onMore }) {
     { path: '/chat', label: t('navChat'), icon: MessageCircle },
     { path: '/symptoms', label: t('navSymptoms'), icon: Stethoscope },
     { path: '/hospitals', label: t('navHospitals'), icon: MapPin },
+    { path: '/settings', label: t('settings'), icon: Settings },
   ];
 
   return (
@@ -39,16 +40,6 @@ export default function BottomNav({ onMore }) {
             </Link>
           );
         })}
-        <button
-          type="button"
-          onClick={onMore}
-          className="flex flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground"
-        >
-          <span className="flex items-center justify-center h-7 w-12 rounded-full">
-            <Menu className="h-5 w-5" />
-          </span>
-          <span>{t('navMore')}</span>
-        </button>
       </div>
     </nav>
   );

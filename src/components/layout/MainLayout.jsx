@@ -25,7 +25,7 @@ export default function MainLayout() {
       <main className={`max-w-5xl mx-auto ${showBottomNav ? 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0' : ''}`}>
         <Outlet context={{ user }} />
       </main>
-      {showBottomNav && <BottomNav onMore={() => setSidebarOpen(true)} />}
+      {showBottomNav && <BottomNav />}
     </div>
   );
 }
