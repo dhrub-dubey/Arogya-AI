@@ -7,19 +7,56 @@ import { Button } from '@/components/ui/button';
 import GlassCard from '@/components/ui/GlassCard';
 import { useLang } from '@/lib/LanguageContext';
 
+// The list is kept for this browser tab's session: switching pages and coming back
+// shows it instantly. It refreshes on the ↻ button, when location is turned off,
+// when you've moved more than MOVED_KM, or after the tab/browser is closed.
+const CACHE_KEY = 'arogya_hospitals_v1';
+const MOVED_KM = 1;
+
+function readCache() {
+  try {
+    return JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+function writeCache(value) {
+  try {
+    if (value) sessionStorage.setItem(CACHE_KEY, JSON.stringify(value));
+    else sessionStorage.removeItem(CACHE_KEY);
+  } catch { /* storage full or blocked: just skip caching */ }
+}
+function distanceKm(a, b) {
+  const r = (d) => (d * Math.PI) / 180;
+  const h = Math.sin(r(b.lat - a.lat) / 2) ** 2
+    + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(r(b.lng - a.lng) / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
 export default function NearbyHospitals() {
-  const { t, lang } = useLang();
-  const [location, setLocation] = useState(null);
+  const { t } = useLang();
+  const [cached] = useState(readCache);
+  const [location, setLocation] = useState(cached?.location ?? null);
   const [locationError, setLocationError] = useState(null);
-  const [hospitals, setHospitals] = useState([]);
+  const [hospitals, setHospitals] = useState(cached?.hospitals ?? []);
   const [isSearching, setIsSearching] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isFindingPhones, setIsFindingPhones] = useState(false);
 
-  const getLocation = () => {
-    setIsLocating(true);
+  // Remember the list (including phone numbers found later) for this session.
+  useEffect(() => {
+    if (location && hospitals.length) writeCache({ location, hospitals });
+  }, [location, hospitals]);
+
+  // force = true: always search again (refresh button / Try again).
+  // force = false: keep the saved list unless location is off or we've moved.
+  const getLocation = (force = true) => {
+    const quiet = !force && hospitals.length > 0; // no spinner when we already have a list
+    if (!quiet) setIsLocating(true);
     setLocationError(null);
     if (!navigator.geolocation) {
+      writeCache(null);
+      setHospitals([]);
       setLocationError('Geolocation is not supported by your browser.');
       setIsLocating(false);
       return;
@@ -27,11 +64,22 @@ export default function NearbyHospitals() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setLocation(coords);
         setIsLocating(false);
+        const saved = readCache();
+        const stillHere = saved?.location && saved.hospitals?.length && distanceKm(saved.location, coords) < MOVED_KM;
+        if (!force && stillHere) {
+          // Same area: keep the list. Fill in any phone numbers that were still being
+          // looked up when the user left the page (served from the shared cache).
+          if (saved.hospitals.some((h) => !h.phone)) fillMissingPhones(saved.hospitals);
+          return;
+        }
+        setLocation(coords);
         fetchNearbyHospitals(coords);
       },
-      (err) => {
+      () => {
+        // Location is off or blocked: the old list may no longer be near the user.
+        writeCache(null);
+        setHospitals([]);
         setLocationError('Unable to get your location. Please allow location access and try again.');
         setIsLocating(false);
       },
@@ -85,8 +133,8 @@ export default function NearbyHospitals() {
   };
 
   useEffect(() => {
-    getLocation();
-  }, []);
+    getLocation(false); // reuse this session's list if we're still in the same place
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="p-4 space-y-5 pb-8">
@@ -105,7 +153,8 @@ export default function NearbyHospitals() {
             variant="outline"
             size="icon"
             className="rounded-xl"
-            onClick={getLocation}
+            onClick={() => getLocation(true)}
+            aria-label="Refresh"
             disabled={isLocating || isSearching}
           >
             <RefreshCw className={`h-4 w-4 ${(isLocating || isSearching) ? 'animate-spin' : ''}`} />
@@ -120,7 +169,7 @@ export default function NearbyHospitals() {
             <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm text-destructive">{locationError}</p>
-              <Button variant="link" className="p-0 h-auto text-xs" onClick={getLocation}>Try again</Button>
+              <Button variant="link" className="p-0 h-auto text-xs" onClick={() => getLocation(true)}>Try again</Button>
             </div>
           </div>
         ) : isLocating ? (
