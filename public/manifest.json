@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "Arogya AI",
+  "short_name": "Arogya AI",
+  "description": "AI health assistant: symptoms, medicines, reports and nearby hospitals, in English, Hindi and Bengali.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#18b394",
+  "categories": ["health", "medical"],
+  "icons": [
+    { "src": "/app_logo.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
+    { "src": "/app_logo.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable" }
+  ]
+}
